@@ -9,20 +9,46 @@ import ChatScreen from './src/screens/ChatScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
 import EditProfileScreen from './src/screens/EditProfileScreen';
 import AppointmentScreen from './src/screens/AppointmentScreen';
+import DashboardScreen from './src/screens/analytics/DashboardScreen';
+import DepartmentAnalyticsScreen from './src/screens/analytics/DepartmentAnalyticsScreen';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
 
 function MainTabs() {
+  // Este valor vendría del estado de la aplicación después del login
+  const userRole = 2; // Simulando que es un administrador
+
   return (
     <Tab.Navigator>
-      <Tab.Screen 
-        name="Chat" 
-        component={ChatScreen} 
-        options={{
-          title: 'Chat'
-        }}
-      />
+      {userRole === 2 ? (
+        // Pestañas para administradores
+        <>
+          <Tab.Screen 
+            name="Dashboard" 
+            component={DashboardScreen} 
+            options={{
+              title: 'Resumen'
+            }}
+          />
+          <Tab.Screen 
+            name="Departments" 
+            component={DepartmentAnalyticsScreen} 
+            options={{
+              title: 'Departamentos'
+            }}
+          />
+        </>
+      ) : (
+        // Pestañas para usuarios normales
+        <Tab.Screen 
+          name="Chat" 
+          component={ChatScreen} 
+          options={{
+            title: 'Chat'
+          }}
+        />
+      )}
       <Tab.Screen 
         name="Profile" 
         component={ProfileScreen} 
