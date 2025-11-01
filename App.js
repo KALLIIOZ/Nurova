@@ -3,6 +3,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { StatusBar } from 'expo-status-bar';
+import { DashboardIcon, DepartmentsIcon, ChatIcon, ProfileIcon } from './src/components/icons';
 
 import LoginScreen from './src/screens/LoginScreen';
 import ChatScreen from './src/screens/ChatScreen';
@@ -28,14 +29,20 @@ function MainTabs() {
             name="Dashboard" 
             component={DashboardScreen} 
             options={{
-              title: 'Resumen'
+              title: 'Resumen',
+              tabBarIcon: ({ color, size }) => (
+                <DashboardIcon width={size} height={size} color={color} />
+              )
             }}
           />
           <Tab.Screen 
             name="Departments" 
             component={DepartmentAnalyticsScreen} 
             options={{
-              title: 'Departamentos'
+              title: 'Departamentos',
+              tabBarIcon: ({ color, size }) => (
+                <DepartmentsIcon width={size} height={size} color={color} />
+              )
             }}
           />
         </>
@@ -45,7 +52,10 @@ function MainTabs() {
           name="Chat" 
           component={ChatScreen} 
           options={{
-            title: 'Chat'
+            title: 'Chat',
+            tabBarIcon: ({ color, size }) => (
+              <ChatIcon width={size} height={size} color={color} />
+            )
           }}
         />
       )}
@@ -53,7 +63,10 @@ function MainTabs() {
         name="Profile" 
         component={ProfileScreen} 
         options={{
-          title: 'Perfil'
+          title: 'Perfil',
+          tabBarIcon: ({ color, size }) => (
+            <ProfileIcon width={size} height={size} color={color} />
+          )
         }}
       />
     </Tab.Navigator>
