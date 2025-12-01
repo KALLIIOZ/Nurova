@@ -4,6 +4,10 @@ import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { StatusBar } from 'expo-status-bar';
 import { DashboardIcon, DepartmentsIcon, ChatIcon, ProfileIcon } from './src/components/icons';
+import { useEffect, useState } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import PsychologistHome from './src/screens/PsychologistHome';
+import PatientsList from './src/screens/PatientsList';
 
 import LoginScreen from './src/screens/LoginScreen';
 import ChatScreen from './src/screens/ChatScreen';
@@ -12,17 +16,32 @@ import EditProfileScreen from './src/screens/EditProfileScreen';
 import AppointmentScreen from './src/screens/AppointmentScreen';
 import DashboardScreen from './src/screens/analytics/DashboardScreen';
 import DepartmentAnalyticsScreen from './src/screens/analytics/DepartmentAnalyticsScreen';
+import PatientRecord from './src/screens/PatientRecord';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
 
 function MainTabs() {
-  // Este valor vendría del estado de la aplicación después del login
-  const userRole = 2; // Simulando que es un administrador
+  // Leemos el rol guardado en AsyncStorage para mostrar tabs condicionales
+  const [userRole, setUserRole] = useState(null);
+
+  useEffect(() => {
+    let mounted = true;
+    const loadRole = async () => {
+      try {
+        const role = await AsyncStorage.getItem('userRole');
+        if (mounted) setUserRole(role);
+      } catch (e) {
+        console.warn('No se pudo leer userRole', e);
+      }
+    };
+    loadRole();
+    return () => { mounted = false; };
+  }, []);
 
   return (
     <Tab.Navigator>
-      {userRole === 2 ? (
+      {userRole === 'manager' || userRole === 'admin' ? (
         // Pestañas para administradores
         <>
           <Tab.Screen 
@@ -46,7 +65,33 @@ function MainTabs() {
             }}
           />
         </>
+      ) : userRole === 'psychologist' ? (
+        // Pestañas para psicólogos
+        <>
+          <Tab.Screen
+            name="PsychHome"
+            component={PsychologistHome}
+            options={{
+              title: 'Inicio',
+              tabBarIcon: ({ color, size }) => (
+                <ProfileIcon width={size} height={size} color={color} />
+              )
+            }}
+          />
+          <Tab.Screen
+            name="Patients"
+            component={PatientsList}
+            options={{
+              title: 'Pacientes',
+              tabBarIcon: ({ color, size }) => (
+                <DepartmentsIcon width={size} height={size} color={color} />
+              )
+            }}
+          />
+          {/* Psychologists don't have an 'Appointments' tab */}
+        </>
       ) : (
+        // Pestañas para usuarios normales
         // Pestañas para usuarios normales
         <Tab.Screen 
           name="Chat" 
@@ -94,7 +139,7 @@ export default function App() {
           options={{ 
             title: 'Editar Perfil',
             headerStyle: {
-              backgroundColor: '#f5f5f5',
+              backgroundColor: '#EAF4FF',
             },
           }} 
         />
@@ -104,9 +149,14 @@ export default function App() {
           options={{ 
             title: 'Agendar Cita',
             headerStyle: {
-              backgroundColor: '#f5f5f5',
+              backgroundColor: '#EAF4FF',
             },
           }} 
+        />
+        <Stack.Screen
+          name="PatientRecord"
+          component={PatientRecord}
+          options={{ title: 'Expediente' }}
         />
       </Stack.Navigator>
     </NavigationContainer>
