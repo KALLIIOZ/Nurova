@@ -72,7 +72,7 @@ const ProfileScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#EAF4FF',
     padding: 20,
   },
   profileInfo: {
@@ -95,7 +95,8 @@ const styles = StyleSheet.create({
   },
   email: {
     fontSize: 18,
-    color: '#333',
+    color: '#007AFF',
+    fontWeight: '700',
   },
   settingsContainer: {
     backgroundColor: 'white',
@@ -109,7 +110,8 @@ const styles = StyleSheet.create({
   },
   settingText: {
     fontSize: 16,
-    color: '#333',
+    color: '#007AFF',
+    fontWeight: '600',
   },
   logoutButton: {
     backgroundColor: '#FF3B30',

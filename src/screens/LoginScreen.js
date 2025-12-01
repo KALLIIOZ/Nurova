@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { StyleSheet, View, TextInput, TouchableOpacity, Text, Alert, Image } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { LeaderIcon, WorkerIcon, PsychologistRoleIcon } from '../components/icons';
 
 const LoginScreen = ({ navigation }) => {
   const [email, setEmail] = useState('');
@@ -9,6 +10,7 @@ const LoginScreen = ({ navigation }) => {
   // Logo local (usa require para assets empaquetados)
   // Ruta relativa desde este archivo hasta /assets es ../../assets/NUROVA.png
   const logo = require('../../assets/NUROVA.png');
+  const [selectedRole, setSelectedRole] = useState('worker');
 
   const handleLogin = async () => {
     if (email.trim() === '' || password.trim() === '') {
@@ -19,13 +21,22 @@ const LoginScreen = ({ navigation }) => {
     // Aquí normalmente harías una llamada a tu API para verificar las credenciales
     // Por ahora, simularemos un login exitoso
     try {
-      // Simulación de respuesta de API
+      // Simulación de respuesta de API basada en el rol seleccionado
+      const roleMap = {
+        manager: { id: 3, role: 'manager', name: 'Líder' },
+        worker: { id: 1, role: 'worker', name: 'Trabajador' },
+        psychologist: { id: 4, role: 'psychologist', name: 'María González' },
+      };
+
+      const selected = roleMap[selectedRole] || roleMap.worker;
+
       const mockApiResponse = {
         token: 'dummy-token',
         user: {
-          id: 2, // Este sería el ID que determina el rol
+          id: selected.id,
           email: email,
-          role: 'admin'
+          role: selected.role,
+          name: selected.name
         }
       };
 
@@ -33,6 +44,7 @@ const LoginScreen = ({ navigation }) => {
       await AsyncStorage.setItem('userEmail', mockApiResponse.user.email);
       await AsyncStorage.setItem('userId', mockApiResponse.user.id.toString());
       await AsyncStorage.setItem('userRole', mockApiResponse.user.role);
+      await AsyncStorage.setItem('userName', mockApiResponse.user.name);
       
       navigation.replace('MainTabs');
     } catch (error) {
@@ -48,6 +60,7 @@ const LoginScreen = ({ navigation }) => {
         resizeMode="contain"
       />
       <Text style={styles.title}>Iniciar Sesión</Text>
+
       <TextInput
         style={styles.input}
         placeholder="Email"
@@ -63,6 +76,24 @@ const LoginScreen = ({ navigation }) => {
         onChangeText={setPassword}
         secureTextEntry
       />
+
+      {/* Selector de rol: líder/gerente, trabajador, psicólogo - moved below inputs */}
+      <View style={styles.roleSelectorContainer}>
+        <TouchableOpacity style={[styles.roleButton, selectedRole === 'manager' && styles.roleSelected]} onPress={() => setSelectedRole('manager')}>
+          <LeaderIcon width={28} height={28} color={selectedRole === 'manager' ? '#007AFF' : '#666'} />
+          <Text style={styles.roleLabel}>Líder / Gerente</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={[styles.roleButton, selectedRole === 'worker' && styles.roleSelected]} onPress={() => setSelectedRole('worker')}>
+          <WorkerIcon width={28} height={28} color={selectedRole === 'worker' ? '#007AFF' : '#666'} />
+          <Text style={styles.roleLabel}>Trabajador</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={[styles.roleButton, selectedRole === 'psychologist' && styles.roleSelected]} onPress={() => setSelectedRole('psychologist')}>
+          <PsychologistRoleIcon width={28} height={28} color={selectedRole === 'psychologist' ? '#007AFF' : '#666'} />
+          <Text style={styles.roleLabel}>Psicólogo</Text>
+        </TouchableOpacity>
+      </View>
       <TouchableOpacity style={styles.button} onPress={handleLogin}>
         <Text style={styles.buttonText}>Ingresar</Text>
       </TouchableOpacity>
@@ -75,7 +106,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     padding: 20,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#EAF4FF',
   },
   logo: {
     width: 150,
@@ -84,11 +115,34 @@ const styles = StyleSheet.create({
     marginBottom: 30,
     borderRadius: 75,
   },
+  roleSelectorContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginBottom: 10,
+  },
+  roleButton: {
+    alignItems: 'center',
+    padding: 6,
+  },
+  roleSelected: {
+    backgroundColor: '#e9f2ff',
+    borderRadius: 8,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+  },
+  roleLabel: {
+    marginTop: 6,
+    fontSize: 12,
+    color: '#333',
+    textAlign: 'center',
+    width: 80,
+  },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 20,
     textAlign: 'center',
+    color: '#007AFF',
   },
   input: {
     backgroundColor: 'white',

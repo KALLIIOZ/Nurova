@@ -127,7 +127,7 @@ const AppointmentScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#EAF4FF',
     padding: 20,
   },
   psychologistCard: {
@@ -140,7 +140,7 @@ const styles = StyleSheet.create({
   psychologistName: {
     fontSize: 22,
     fontWeight: 'bold',
-    color: '#333',
+    color: '#007AFF',
     marginBottom: 5,
   },
   psychologistInfo: {
@@ -163,7 +163,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     marginBottom: 15,
-    color: '#333',
+    color: '#007AFF',
   },
   timeContainer: {
     marginBottom: 20,
