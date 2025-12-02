@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
+import { DepartmentsIcon, CalendarIcon } from '../components/icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const PsychologistHome = ({ navigation }) => {
-  const [doctorName, setDoctorName] = useState('Dr. Psicólogo');
+  const [userName, setUserName] = useState('Psicólogo');
   const [nextAppointment, setNextAppointment] = useState(null);
 
   useEffect(() => {
@@ -11,64 +12,62 @@ const PsychologistHome = ({ navigation }) => {
       try {
         const name = await AsyncStorage.getItem('userName');
         const email = await AsyncStorage.getItem('userEmail');
-        if (name) setDoctorName(`Dr. ${name}`);
-        else if (email) setDoctorName(`Dr. ${email.split('@')[0]}`);
+        if (name) setUserName(name);
+        else if (email) setUserName(email.split('@')[0]);
 
-        // Simulación: cargar próxima cita (en una app real vendría de la API)
-        // Valores de ejemplo
+        // ejemplo de próxima cita (simulado)
         const mockNext = {
+          patientId: '1',
           patientName: 'María Pérez',
-          datetime: new Date(Date.now() + 1000 * 60 * 60 * 24) // mañana
+          datetime: new Date(), // hoy
         };
         setNextAppointment(mockNext);
       } catch (error) {
         console.error('Error loading user', error);
       }
     };
+
     loadUser();
   }, []);
 
-  const formatPreviewDate = (dateObj) => {
-    if (!dateObj) return '';
-    const today = new Date();
-    const isToday = dateObj.toDateString() === today.toDateString();
-    if (isToday) return 'Hoy';
-    return dateObj.toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric', month: 'short' });
-  };
-
-  const formatPreviewTime = (dateObj) => {
-    if (!dateObj) return '';
-    return dateObj.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+  const formatGreetingName = (fullName) => {
+    if (!fullName) return '';
+    const parts = fullName.split(' ');
+    const last = parts.length > 1 ? parts[parts.length - 1] : parts[0];
+    const honorific = last.toLowerCase().endsWith('a') ? 'Dra.' : 'Dr.'; // heuristic
+    return `${honorific} ${last}`;
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.greeting}>{doctorName}</Text>
+      <Text style={styles.greeting}>Hola, {formatGreetingName(userName)}</Text>
+      <Text style={styles.subtitle}>Gestión de pacientes y consultas</Text>
 
-      <View style={styles.buttonsContainer}>
-        <TouchableOpacity
-          style={styles.button}
-          onPress={() => navigation.navigate('Patients')}
-        >
-          <Text style={styles.buttonTitle}>Lista de pacientes</Text>
+      <View style={styles.homeCards}>
+        <TouchableOpacity style={styles.card} onPress={() => navigation.navigate('Patients')}>
+          <View style={styles.cardIcon}><DepartmentsIcon width={28} height={28} color={'#0B3D91'} /></View>
+          <View style={styles.cardContent}>
+            <Text style={styles.cardTitle}>Mis pacientes</Text>
+            <Text style={styles.cardSubtitle}>Lista y detalles</Text>
+          </View>
         </TouchableOpacity>
 
-        <View
-          style={styles.appointmentPreview}
+        <TouchableOpacity
+          style={styles.card}
+          onPress={() => {
+            if (nextAppointment) navigation.navigate('PatientRecord', { patientId: nextAppointment.patientId, patientName: nextAppointment.patientName });
+          }}
         >
-          <Text style={styles.previewTitle}>Próxima cita</Text>
-          {nextAppointment ? (
-            <View>
-              <Text style={styles.previewDate}>{formatPreviewDate(nextAppointment.datetime)}</Text>
-              <Text style={styles.previewTime}>{formatPreviewTime(nextAppointment.datetime)}</Text>
-              <Text style={styles.previewPatient}>{nextAppointment.patientName}</Text>
-            </View>
-          ) : (
-            <Text style={styles.emptyText}>No hay citas próximas</Text>
-          )}
-        </View>
-
-        {/* Removed 'Ver agenda' for psychologists - they don't have the appointments section */}
+          <View style={styles.cardIcon}><CalendarIcon width={28} height={28} color={'#0B3D91'} /></View>
+          <View style={styles.cardContent}>
+            <Text style={styles.cardTitle}>Hoy</Text>
+            {nextAppointment ? (
+              <Text style={styles.cardSubtitle}>Próxima consulta {new Date(nextAppointment.datetime).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}</Text>
+            ) : (
+              <Text style={styles.cardSubtitle}>No hay consultas hoy</Text>
+            )}
+          </View>
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -82,61 +81,53 @@ const styles = StyleSheet.create({
   },
   greeting: {
     fontSize: 26,
-    fontWeight: 'bold',
-    marginVertical: 10,
-    color: '#007AFF',
+    fontWeight: '700',
+    marginBottom: 6,
+    color: '#0B3D91',
   },
-  buttonsContainer: {
-    marginTop: 20,
+  subtitle: {
+    color: '#254061',
+    marginBottom: 18,
+    fontSize: 14,
+  },
+  homeCards: {
+    flexDirection: 'column',
+    gap: 12,
+  },
+  card: {
+    flexDirection: 'row',
     alignItems: 'center',
-  },
-  button: {
-    width: '100%',
-    backgroundColor: '#007AFF',
+    backgroundColor: '#fff',
+    borderRadius: 16,
     padding: 16,
-    borderRadius: 10,
-    alignItems: 'center',
-    marginBottom: 14,
-  },
-  buttonTitle: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  appointmentPreview: {
-    width: '100%',
-    backgroundColor: 'white',
-    padding: 16,
-    borderRadius: 10,
-    alignItems: 'flex-start',
-    marginBottom: 14,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: '#DCEFFC',
     elevation: 2,
   },
-  previewTitle: {
+  cardIcon: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    borderWidth: 1,
+    borderColor: '#DCEFFC',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 14,
+    backgroundColor: '#fff'
+  },
+  cardContent: {
+    flex: 1,
+  },
+  cardTitle: {
     fontSize: 16,
-    fontWeight: 'bold',
-    marginBottom: 6,
-    color: '#007AFF',
+    fontWeight: '700',
+    color: '#0B3D91'
   },
-  previewDate: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#007AFF',
-    marginBottom: 5,
-  },
-  previewTime: {
-    fontSize: 16,
-    color: '#666',
-    marginBottom: 6,
-  },
-  previewPatient: {
+  cardSubtitle: {
     fontSize: 14,
-    color: '#007AFF',
-    fontWeight: '600',
-    marginTop: 4,
-  },
-  emptyText: {
-    color: '#999',
+    color: '#5E6B7C',
+    marginTop: 6,
   }
 });
 

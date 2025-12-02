@@ -1,22 +1,25 @@
 import React, { useState } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { createAppointment } from '../api/client';
 import { StyleSheet, View, Text, TouchableOpacity, ScrollView } from 'react-native';
 import { Calendar } from 'react-native-calendars';
 
-const AppointmentScreen = () => {
+const AppointmentScreen = ({ navigation }) => {
   const [selectedDate, setSelectedDate] = useState(null);
   const [selectedTime, setSelectedTime] = useState(null);
 
   // Simulación de datos del psicólogo asignado
   const psychologist = {
-    name: "Dra. María González",
-    specialty: "Psicóloga Clínica",
-    experience: "10 años de experiencia"
+    name: "Laura Herrera",
+    specialty: "Psicóloga organizacional",
+    experience: "7 años de experiencia"
   };
 
-  // Simulación de horarios disponibles
+  // Simulación de horarios disponibles (ejemplo reducido, formato amigable)
   const availableHours = [
-    "09:00", "10:00", "11:00",
-    "16:00", "17:00", "18:00"
+    '10:00 am',
+    '11:00 am',
+    '2:00 pm',
   ];
 
   // Obtener la fecha actual para el calendario
@@ -34,20 +37,65 @@ const AppointmentScreen = () => {
 
   const handleSchedule = () => {
     if (selectedDate && selectedTime) {
-      const formattedDate = selectedDate.toLocaleDateString();
-      alert(`Cita agendada con ${psychologist.name} para el ${formattedDate} a las ${selectedTime}`);
+      (async () => {
+        try {
+          // Compose a ISO datetime from selected date + time string like '10:00 am'
+          const date = selectedDate;
+          // parse time
+          const m = selectedTime.match(/(\d+):(\d+)\s*(am|pm)/i);
+          let hour = 9, minute = 0;
+          if (m) {
+            hour = parseInt(m[1], 10);
+            minute = parseInt(m[2], 10);
+            const ampm = m[3].toLowerCase();
+            if (ampm === 'pm' && hour < 12) hour += 12;
+            if (ampm === 'am' && hour === 12) hour = 0;
+          }
+
+          const start = new Date(date);
+          start.setHours(hour, minute, 0, 0);
+
+          const userId = await AsyncStorage.getItem('userId');
+          const payload = {
+            user_id: userId ? Number(userId) : 0,
+            psych_id: null,
+            start_time: start.toISOString(),
+            duration_minutes: 60,
+            notes: ''
+          };
+
+          try {
+            await createAppointment(payload);
+            alert(`Cita agendada con ${psychologist.name} para el ${start.toLocaleDateString()} a las ${selectedTime}`);
+          } catch (e) {
+            // network error -> fallback to local confirmation
+            alert(`Cita (local) agendada con ${psychologist.name} para el ${start.toLocaleDateString()} a las ${selectedTime}`);
+          }
+        } catch (e) {
+          alert('Error al agendar cita');
+        }
+      })();
     } else {
       alert('Por favor selecciona fecha y hora');
     }
   };
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 40 }}>
+      <View style={styles.headerRow}>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+          <Text style={styles.backText}>←</Text>
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>Programar cita</Text>
+        <View style={{ width: 40 }} />
+      </View>
       {/* Información del psicólogo */}
-      <View style={styles.psychologistCard}>
-        <Text style={styles.psychologistName}>{psychologist.name}</Text>
-        <Text style={styles.psychologistInfo}>{psychologist.specialty}</Text>
-        <Text style={styles.psychologistInfo}>{psychologist.experience}</Text>
+      <View style={styles.psychologistCardAlt}>
+        <View style={styles.psychAvatar} />
+        <View style={{ marginLeft: 12 }}>
+          <Text style={styles.psychologistName}>{psychologist.name}</Text>
+          <Text style={styles.psychologistInfo}>{psychologist.specialty}</Text>
+        </View>
       </View>
 
       {/* Calendario */}
@@ -118,7 +166,7 @@ const AppointmentScreen = () => {
         onPress={handleSchedule}
         disabled={!selectedDate || !selectedTime}
       >
-        <Text style={styles.scheduleButtonText}>Agendar Cita</Text>
+        <Text style={styles.scheduleButtonText}>Confirmar</Text>
       </TouchableOpacity>
     </ScrollView>
   );
@@ -169,17 +217,17 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   timeGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
+    marginTop: 8,
   },
   timeButton: {
     backgroundColor: 'white',
-    padding: 15,
-    borderRadius: 10,
+    paddingVertical: 12,
+    borderRadius: 30,
     marginBottom: 10,
-    width: '48%',
+    width: '100%',
     alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#D8EEFF',
   },
   selectedTime: {
     backgroundColor: '#007AFF',
@@ -192,11 +240,12 @@ const styles = StyleSheet.create({
     color: 'white',
   },
   scheduleButton: {
-    backgroundColor: '#007AFF',
-    padding: 15,
-    borderRadius: 10,
+    backgroundColor: '#FFA65C',
+    padding: 14,
+    borderRadius: 30,
     alignItems: 'center',
     marginVertical: 20,
+    width: '100%'
   },
   disabledButton: {
     backgroundColor: '#cccccc',
@@ -205,6 +254,42 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingTop: 10,
+    paddingBottom: 18,
+  },
+  backButton: {
+    width: 40,
+    alignItems: 'flex-start',
+    justifyContent: 'center',
+  },
+  backText: {
+    fontSize: 22,
+    color: '#20304E',
+  },
+  headerTitle: {
+    flex: 1,
+    textAlign: 'center',
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#20304E',
+  },
+  psychologistCardAlt: {
+    backgroundColor: 'white',
+    padding: 12,
+    borderRadius: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 18,
+  },
+  psychAvatar: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: '#F5F7FB',
   },
 });
 
