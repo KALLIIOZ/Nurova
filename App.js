@@ -7,14 +7,18 @@ import { DashboardIcon, DepartmentsIcon, ChatIcon, ProfileIcon } from './src/com
 import { useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import PsychologistHome from './src/screens/PsychologistHome';
+import WorkerHome from './src/screens/WorkerHome';
 import PatientsList from './src/screens/PatientsList';
 
 import LoginScreen from './src/screens/LoginScreen';
+import RegisterScreen from './src/screens/RegisterScreen';
+import RegistrationCompleteScreen from './src/screens/RegistrationCompleteScreen';
 import ChatScreen from './src/screens/ChatScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
 import EditProfileScreen from './src/screens/EditProfileScreen';
 import AppointmentScreen from './src/screens/AppointmentScreen';
 import DashboardScreen from './src/screens/analytics/DashboardScreen';
+import ManagerHome from './src/screens/analytics/ManagerHome';
 import DepartmentAnalyticsScreen from './src/screens/analytics/DepartmentAnalyticsScreen';
 import PatientRecord from './src/screens/PatientRecord';
 
@@ -44,19 +48,29 @@ function MainTabs() {
       {userRole === 'manager' || userRole === 'admin' ? (
         // Pestañas para administradores
         <>
-          <Tab.Screen 
-            name="Dashboard" 
-            component={DashboardScreen} 
+          <Tab.Screen
+            name="ManagerHome"
+            component={ManagerHome}
             options={{
-              title: 'Resumen',
+              title: 'Inicio',
               tabBarIcon: ({ color, size }) => (
                 <DashboardIcon width={size} height={size} color={color} />
               )
             }}
           />
-          <Tab.Screen 
-            name="Departments" 
-            component={DepartmentAnalyticsScreen} 
+          <Tab.Screen
+            name="Dashboard"
+            component={DashboardScreen}
+            options={{
+              title: 'Resumen',
+              tabBarIcon: ({ color, size }) => (
+                <DepartmentsIcon width={size} height={size} color={color} />
+              )
+            }}
+          />
+          <Tab.Screen
+            name="Departments"
+            component={DepartmentAnalyticsScreen}
             options={{
               title: 'Departamentos',
               tabBarIcon: ({ color, size }) => (
@@ -91,18 +105,29 @@ function MainTabs() {
           {/* Psychologists don't have an 'Appointments' tab */}
         </>
       ) : (
-        // Pestañas para usuarios normales
-        // Pestañas para usuarios normales
-        <Tab.Screen 
-          name="Chat" 
-          component={ChatScreen} 
-          options={{
-            title: 'Chat',
-            tabBarIcon: ({ color, size }) => (
-              <ChatIcon width={size} height={size} color={color} />
-            )
-          }}
-        />
+        // Pestañas para usuarios normales (trabajador)
+        <>
+          <Tab.Screen
+            name="Home"
+            component={WorkerHome}
+            options={{
+              title: 'Inicio',
+              tabBarIcon: ({ color, size }) => (
+                <ProfileIcon width={size} height={size} color={color} />
+              )
+            }}
+          />
+          <Tab.Screen 
+            name="Chat" 
+            component={ChatScreen} 
+            options={{
+              title: 'Chat',
+              tabBarIcon: ({ color, size }) => (
+                <ChatIcon width={size} height={size} color={color} />
+              )
+            }}
+          />
+        </>
       )}
       <Tab.Screen 
         name="Profile" 
@@ -128,10 +153,20 @@ export default function App() {
           component={LoginScreen} 
           options={{ headerShown: false }} 
         />
+        <Stack.Screen
+          name="Register"
+          component={RegisterScreen}
+          options={{ headerShown: false }}
+        />
         <Stack.Screen 
           name="MainTabs" 
           component={MainTabs}
           options={{ headerShown: false }} 
+        />
+        <Stack.Screen
+          name="RegistrationComplete"
+          component={RegistrationCompleteScreen}
+          options={{ headerShown: false }}
         />
         <Stack.Screen 
           name="EditProfile" 
