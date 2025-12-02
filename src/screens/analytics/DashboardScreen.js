@@ -1,4 +1,3 @@
-import React from 'react';
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, View, Text, ScrollView, Dimensions } from 'react-native';
 import { BarChart, LineChart, ProgressChart } from 'react-native-chart-kit';
@@ -37,24 +36,31 @@ const DashboardScreen = () => {
 
   const screenWidth = Dimensions.get('window').width;
 
+  const [remote, setRemote] = useState(null);
+
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const res = await getMetrics();
+        if (mounted && res) setRemote(res);
+      } catch (e) {
+        // keep mock on network error
+      }
+    })();
+    return () => { mounted = false; };
+  }, []);
+
+  const data = remote || mockData;
+
+  // support both server key shapes: `mentalHealthTrend` (client) or `mood_trend` (server)
+  const trendData = data.mentalHealthTrend || (data.mood_trend ? {
+    labels: data.mood_trend.labels || [],
+    datasets: [{ data: data.mood_trend.data || [] }]
+  } : mockData.mentalHealthTrend);
+
   return (
     <ScrollView style={styles.container} contentContainerStyle={{padding: 20}}>
-    const [remote, setRemote] = useState(null);
-
-    useEffect(() => {
-      let mounted = true;
-      (async () => {
-        try {
-          const data = await getMetrics();
-          if (mounted && data) setRemote(data);
-        } catch (e) {
-          // keep mock
-        }
-      })();
-      return () => { mounted = false; };
-    }, []);
-
-    const data = remote || mockData;
       <Text style={styles.screenTitle}>Métricas</Text>
 
       <Text style={styles.sectionTitle}>Panel de Salud Mental</Text>
@@ -63,7 +69,7 @@ const DashboardScreen = () => {
         {/* Score card */}
         <View style={[styles.smallCard, {width: (screenWidth - 60) * 0.4}]}>
           <Text style={styles.smallLabel}>Puntaje de bienestar</Text>
-          <Text style={styles.scoreValue}>72</Text>
+          <Text style={styles.scoreValue}>{data.global_score || 72}</Text>
           <Text style={styles.smallNote}>Actual</Text>
         </View>
 
@@ -72,11 +78,11 @@ const DashboardScreen = () => {
           <Text style={styles.cardTitle}>Estado de ánimo</Text>
           <LineChart
             data={{
-              labels: mockData.mentalHealthTrend.labels,
-              datasets: mockData.mentalHealthTrend.datasets
+              labels: trendData.labels,
+              datasets: trendData.datasets
             }}
-                labels: data.mentalHealthTrend.labels,
-                datasets: data.mentalHealthTrend.datasets
+            width={(screenWidth - 60) * 0.55}
+            height={120}
             chartConfig={chartConfig}
             withDots={true}
             bezier
@@ -90,7 +96,7 @@ const DashboardScreen = () => {
         <View style={[styles.smallCard, {width: (screenWidth - 60) * 0.4}]}>
           <Text style={styles.smallLabel}>Interacciones con IA</Text>
           <ProgressChart
-            data={{labels: ['IA'], data: [0.29]}}
+            data={{labels: ['IA'], data: [data.ia_interactions_pct || 0.29]}}
             width={(screenWidth - 60) * 0.35}
             height={120}
             strokeWidth={8}
@@ -98,7 +104,7 @@ const DashboardScreen = () => {
             chartConfig={chartConfig}
             hideLegend={true}
           />
-          <Text style={styles.smallPercent}>29%</Text>
+          <Text style={styles.smallPercent}>{data.ia_interactions_pct ? `${Math.round(data.ia_interactions_pct * 100)}%` : '29%'}</Text>
         </View>
 
         {/* Evaluations bar chart */}
@@ -107,10 +113,10 @@ const DashboardScreen = () => {
           <BarChart
             data={{
               labels: ['Abr 10','Abr 17','Abr 24','May 1'],
-              datasets: [{ data: [8, 15, 20, 24] }]
+              datasets: [{ data: data.evaluations || [8, 15, 20, 24] }]
             }}
             width={(screenWidth - 60) * 0.55}
-                datasets: [{ data: data.evaluations || [8, 15, 20, 24] }]
+            height={120}
             chartConfig={chartConfig}
             style={{marginTop: 8}}
             fromZero
@@ -123,10 +129,10 @@ const DashboardScreen = () => {
       <View style={styles.recommendRow}>
         <View style={[styles.recommendCard]}>
           <Text style={styles.smallLabel}>Estado emocional promedio</Text>
-          <Text style={styles.bigState}>Calma</Text>
+          <Text style={styles.bigState}>{data.average_state}</Text>
           <Text style={styles.recommendTitle}>Recomendaciones</Text>
           <View style={styles.recommendList}>
-            <Text style={styles.bigState}>{data.average_state}</Text>
+            <Text style={styles.recommendItem}>• Organiza una sesión de feedback</Text>
             <Text style={styles.recommendItem}>• Fomenta las pausas activas</Text>
             <Text style={styles.recommendItem}>• Comparte recursos de manejo del estrés</Text>
           </View>
@@ -137,14 +143,14 @@ const DashboardScreen = () => {
           <View style={styles.engRow}>
             <View style={styles.engCol}>
               <Text style={styles.engLabel}>Empleados activos</Text>
-              <Text style={styles.engValue}>82%</Text>
+              <Text style={styles.engValue}>{data.engagement?.active || '82%'}</Text>
             </View>
             <View style={styles.engCol}>
-                <Text style={styles.engValue}>{data.engagement?.active || '82%'}</Text>
-              <Text style={styles.engValue}>24%</Text>
+              <Text style={styles.engLabel}>% con sesiones de psicólogo</Text>
+              <Text style={styles.engValue}>{data.engagement?.psych_sessions_pct || '24%'}</Text>
             </View>
           </View>
-                <Text style={styles.engValue}>{data.engagement?.psych_sessions_pct || '24%'}</Text>
+        </View>
       </View>
 
       <View style={{height: 18}} />
@@ -153,18 +159,18 @@ const DashboardScreen = () => {
       <View style={styles.summaryRow}>
         <View style={styles.summaryItem}>
           <Text style={styles.summaryLabel}>Tendencia</Text>
-          <Text style={styles.summaryValue}>Estable</Text>
+          <Text style={styles.summaryValue}>{data.summary?.trend || 'Estable'}</Text>
         </View>
         <View style={styles.summaryItem}>
-            <Text style={styles.summaryValue}>{data.summary?.trend || 'Estable'}</Text>
-          <Text style={styles.summaryValue}>77%</Text>
+          <Text style={styles.summaryLabel}>Cobertura</Text>
+          <Text style={styles.summaryValue}>{data.summary?.coverage || '77%'}</Text>
         </View>
         <View style={styles.summaryItem}>
-            <Text style={styles.summaryValue}>{data.summary?.coverage || '77%'}</Text>
-          <Text style={styles.summaryValue}>2,530</Text>
+          <Text style={styles.summaryLabel}>Usuarios</Text>
+          <Text style={styles.summaryValue}>{data.summary?.users || 2530}</Text>
         </View>
       </View>
-            <Text style={styles.summaryValue}>{data.summary?.users || 2530}</Text>
+
       <View style={{height: 36}} />
     </ScrollView>
   );

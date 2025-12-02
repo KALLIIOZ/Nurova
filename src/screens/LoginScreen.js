@@ -31,6 +31,12 @@ const LoginScreen = ({ navigation }) => {
         await AsyncStorage.setItem('userId', resp.user.id.toString());
         await AsyncStorage.setItem('userRole', resp.user.role);
         await AsyncStorage.setItem('userName', resp.user.name);
+        // ensure last name is consistent: set or clear stored last name
+        if (resp.user.last_name || resp.user.lastName) {
+          await AsyncStorage.setItem('userLastName', resp.user.last_name || resp.user.lastName);
+        } else {
+          await AsyncStorage.removeItem('userLastName');
+        }
         navigation.replace('MainTabs');
         return;
       }
@@ -38,35 +44,9 @@ const LoginScreen = ({ navigation }) => {
       // If response shape unexpected, fallback
       throw new Error('API response invalid');
     } catch (error) {
-      // Network or backend failed -> keep previous mock behavior so user can continue testing locally
-      try {
-        const roleMap = {
-          manager: { id: 3, role: 'manager', name: 'Líder' },
-          worker: { id: 1, role: 'worker', name: 'Trabajador' },
-          psychologist: { id: 4, role: 'psychologist', name: 'María González' },
-        };
-
-        const selected = roleMap[selectedRole] || roleMap.worker;
-
-        const mockApiResponse = {
-          token: 'dummy-token',
-          user: {
-            id: selected.id,
-            email: email,
-            role: selected.role,
-            name: selected.name
-          }
-        };
-
-        await AsyncStorage.setItem('userToken', mockApiResponse.token);
-        await AsyncStorage.setItem('userEmail', mockApiResponse.user.email);
-        await AsyncStorage.setItem('userId', mockApiResponse.user.id.toString());
-        await AsyncStorage.setItem('userRole', mockApiResponse.user.role);
-        await AsyncStorage.setItem('userName', mockApiResponse.user.name);
-        navigation.replace('MainTabs');
-      } catch (err) {
-        Alert.alert('Error', 'Hubo un problema al iniciar sesión');
-      }
+      console.error('Login error:', error);
+      // No fallback mock: require the backend to return a valid access token
+      Alert.alert('Error', 'No se pudo autenticar. Verifica tus credenciales o la conexión a Internet.');
     }
   };
 

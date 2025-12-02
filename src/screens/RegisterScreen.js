@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { StyleSheet, View, Text, TextInput, TouchableOpacity, Alert } from 'react-native';
+import { StyleSheet, View, Text, TextInput, TouchableOpacity, Alert, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { registerUser, loginUser } from '../api/client';
 import { LeaderIcon, WorkerIcon, PsychologistRoleIcon } from '../components/icons';
@@ -106,6 +106,7 @@ const RegisterScreen = ({ navigation }) => {
       // Save worker-specific info
       if (selectedRole === 'worker') {
         if (lastName) await AsyncStorage.setItem('userLastName', lastName);
+        else await AsyncStorage.removeItem('userLastName');
         if (age) await AsyncStorage.setItem('userAge', age.toString());
         if (company) await AsyncStorage.setItem('userCompany', company);
         if (department) await AsyncStorage.setItem('userDepartment', department);
@@ -113,12 +114,16 @@ const RegisterScreen = ({ navigation }) => {
       }
       // Save psychologist-specific info
       if (selectedRole === 'psychologist') {
+        if (lastName) await AsyncStorage.setItem('userLastName', lastName);
+        else await AsyncStorage.removeItem('userLastName');
         if (specialty) await AsyncStorage.setItem('userSpecialty', specialty);
         if (experience) await AsyncStorage.setItem('userExperience', experience.toString());
         if (docs) await AsyncStorage.setItem('userDocs', docs);
       }
       // Save manager-specific info
       if (selectedRole === 'manager') {
+        if (lastName) await AsyncStorage.setItem('userLastName', lastName);
+        else await AsyncStorage.removeItem('userLastName');
         if (company) await AsyncStorage.setItem('userCompany', company);
         if (position) await AsyncStorage.setItem('userPosition', position);
       }
@@ -138,7 +143,12 @@ const RegisterScreen = ({ navigation }) => {
   const goBackToRole = () => setStage('role');
 
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView
+      style={{ flex: 1, backgroundColor: '#EAF4FF' }}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 80 : 0}
+    >
+      <ScrollView contentContainerStyle={styles.scrollContainer} keyboardShouldPersistTaps="handled">
       {stage === 'role' ? (
         <View>
           <Text style={styles.title}>¿Cuál es tu rol en la organización?</Text>
@@ -316,7 +326,8 @@ const RegisterScreen = ({ navigation }) => {
           </View>
         </View>
       )}
-    </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 };
 
@@ -404,6 +415,10 @@ const styles = StyleSheet.create({
   roleTop: {
     alignItems: 'center',
     marginVertical: 8,
+  },
+  scrollContainer: {
+    padding: 20,
+    paddingBottom: 36,
   },
   roleIconCircle: {
     width: 80,
