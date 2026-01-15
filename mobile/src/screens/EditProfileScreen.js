@@ -73,7 +73,7 @@ const EditProfileScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#EAF4FF',
     padding: 20,
   },
   title: {
@@ -81,6 +81,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 30,
     textAlign: 'center',
+    color: '#007AFF',
   },
   form: {
     backgroundColor: 'white',

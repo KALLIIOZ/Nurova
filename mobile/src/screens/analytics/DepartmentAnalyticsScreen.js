@@ -91,20 +91,20 @@ const DepartmentAnalyticsScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#EAF4FF',
     padding: 20,
   },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 20,
-    color: '#333',
+    color: '#007AFF',
   },
   sectionTitle: {
     fontSize: 18,
     fontWeight: 'bold',
     marginBottom: 15,
-    color: '#333',
+    color: '#007AFF',
   },
   tableContainer: {
     backgroundColor: 'white',
@@ -126,7 +126,7 @@ const styles = StyleSheet.create({
   },
   headerCell: {
     fontWeight: 'bold',
-    color: '#333',
+    color: '#007AFF',
   },
   tableRow: {
     flexDirection: 'row',
