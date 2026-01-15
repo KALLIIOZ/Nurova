@@ -1,21 +1,15 @@
 import React, { useState } from 'react';
 import { StyleSheet, View, TextInput, TouchableOpacity, Text, Alert, Image } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-<<<<<<< HEAD:mobile/src/screens/LoginScreen.js
 import api from '../services/api';
-=======
-import { loginUser } from '../api/client';
-import { LeaderIcon, WorkerIcon, PsychologistRoleIcon } from '../components/icons';
->>>>>>> 49a72a044e99258f65e9490e898d1d55c47f9826:src/screens/LoginScreen.js
 
 const LoginScreen = ({ navigation }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-
-  // Logo local (usa require para assets empaquetados)
-  // Ruta relativa desde este archivo hasta /assets es ../../assets/NUROVA.png
-  const logo = require('../../assets/NUROVA.png');
   const [selectedRole, setSelectedRole] = useState('worker');
+
+  // Logo local
+  const logo = require('../../assets/NUROVA.png');
 
   const handleLogin = async () => {
     if (email.trim() === '' || password.trim() === '') {
@@ -24,7 +18,6 @@ const LoginScreen = ({ navigation }) => {
     }
 
     try {
-<<<<<<< HEAD:mobile/src/screens/LoginScreen.js
       const response = await api.post('/auth/login', { email, password });
       const { token, user } = response.data;
 
@@ -37,33 +30,6 @@ const LoginScreen = ({ navigation }) => {
     } catch (error) {
       const message = error.response?.data?.message || 'Hubo un problema al iniciar sesión';
       Alert.alert('Error', message);
-=======
-      // Try authenticating against backend API (fallback to in-app mock if network fails)
-      const resp = await loginUser({ email, password });
-      // backend returns { access_token, user }
-      if (resp && resp.access_token && resp.user) {
-        await AsyncStorage.setItem('userToken', resp.access_token);
-        await AsyncStorage.setItem('userEmail', resp.user.email);
-        await AsyncStorage.setItem('userId', resp.user.id.toString());
-        await AsyncStorage.setItem('userRole', resp.user.role);
-        await AsyncStorage.setItem('userName', resp.user.name);
-        // ensure last name is consistent: set or clear stored last name
-        if (resp.user.last_name || resp.user.lastName) {
-          await AsyncStorage.setItem('userLastName', resp.user.last_name || resp.user.lastName);
-        } else {
-          await AsyncStorage.removeItem('userLastName');
-        }
-        navigation.replace('MainTabs');
-        return;
-      }
-
-      // If response shape unexpected, fallback
-      throw new Error('API response invalid');
-    } catch (error) {
-      console.error('Login error:', error);
-      // No fallback mock: require the backend to return a valid access token
-      Alert.alert('Error', 'No se pudo autenticar. Verifica tus credenciales o la conexión a Internet.');
->>>>>>> 49a72a044e99258f65e9490e898d1d55c47f9826:src/screens/LoginScreen.js
     }
   };
 
@@ -114,17 +80,18 @@ const LoginScreen = ({ navigation }) => {
       {/* Small role icons line at bottom (visual only) */}
       <View style={styles.roleSelectorContainer}>
         <TouchableOpacity style={[styles.roleButton, selectedRole === 'manager' && styles.roleSelected]} onPress={() => setSelectedRole('manager')}>
-          <LeaderIcon width={28} height={28} color={selectedRole === 'manager' ? '#007AFF' : '#666'} />
+          {/* Placeholder for LeaderIcon - reusing Text/Emoji if icons missing */}
+          <Text style={{ fontSize: 24 }}>👔</Text>
           <Text style={styles.roleLabel}>Líder / Gerente</Text>
         </TouchableOpacity>
 
         <TouchableOpacity style={[styles.roleButton, selectedRole === 'worker' && styles.roleSelected]} onPress={() => setSelectedRole('worker')}>
-          <WorkerIcon width={28} height={28} color={selectedRole === 'worker' ? '#007AFF' : '#666'} />
+          <Text style={{ fontSize: 24 }}>👷</Text>
           <Text style={styles.roleLabel}>Trabajador</Text>
         </TouchableOpacity>
 
         <TouchableOpacity style={[styles.roleButton, selectedRole === 'psychologist' && styles.roleSelected]} onPress={() => setSelectedRole('psychologist')}>
-          <PsychologistRoleIcon width={28} height={28} color={selectedRole === 'psychologist' ? '#007AFF' : '#666'} />
+          <Text style={{ fontSize: 24 }}>🧠</Text>
           <Text style={styles.roleLabel}>Psicólogo</Text>
         </TouchableOpacity>
       </View>

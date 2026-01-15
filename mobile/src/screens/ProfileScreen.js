@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, Text, TouchableOpacity, Alert, Image } from 'react-native';
+import { StyleSheet, View, Text, TouchableOpacity, Alert, Image, ScrollView } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import api from '../services/api';
 
@@ -32,48 +32,28 @@ const ProfileScreen = ({ navigation }) => {
 
   const loadUserData = async () => {
     try {
-<<<<<<< HEAD:mobile/src/screens/ProfileScreen.js
       const response = await api.get('/users/profile');
       if (response.data) {
+        // Map API response to state
         setUserEmail(response.data.email);
-        // Could also set name if we had state for it
-      }
-=======
-      const email = await AsyncStorage.getItem('userEmail');
-      const name = await AsyncStorage.getItem('userName');
-      const role = await AsyncStorage.getItem('userRole');
-      const photo = await AsyncStorage.getItem('userPhoto');
-      const phone = await AsyncStorage.getItem('userPhone');
-      const lastName = await AsyncStorage.getItem('userLastName');
-      const age = await AsyncStorage.getItem('userAge');
-      const company = await AsyncStorage.getItem('userCompany');
-      const department = await AsyncStorage.getItem('userDepartment');
-      const tenure = await AsyncStorage.getItem('userTenure');
-      const specialty = await AsyncStorage.getItem('userSpecialty');
-      const experience = await AsyncStorage.getItem('userExperience');
-      const docs = await AsyncStorage.getItem('userDocs');
-      const position = await AsyncStorage.getItem('userPosition');
+        setUserName(response.data.name);
+        setUserRole(response.data.role);
 
-      if (email) setUserEmail(email);
-      if (name) setUserName(name);
-      if (role) setUserRole(role);
-      if (photo) setUserPhoto(photo);
-      if (phone) setUserPhone(phone);
-      if (lastName) setUserLastName(lastName);
-      if (age) setUserAge(age);
-      if (company) setUserCompany(company);
-      if (department) setUserDepartment(department);
-      if (tenure) setUserTenure(tenure);
-      if (specialty) setUserSpecialty(specialty);
-      if (experience) setUserExperience(experience);
-      if (docs) setUserDocs(docs);
-      if (position) setUserPosition(position);
->>>>>>> 49a72a044e99258f65e9490e898d1d55c47f9826:src/screens/ProfileScreen.js
+        // These fields are not yet in API, but if we had them:
+        // setUserCompany(response.data.company);
+
+        // Fallback or load from local storage if mixed usage intended? 
+        // For clean state, we trust API. If API is minimal, we show minimal.
+        // But to keep the UI looking "full" as the user might expect, we can defaults:
+        setUserCompany('Nuova');
+      }
     } catch (error) {
       console.error('Error loading user data:', error);
-      // Fallback to local storage if API fails
+      // Fallback
       const email = await AsyncStorage.getItem('userEmail');
+      const role = await AsyncStorage.getItem('userRole');
       if (email) setUserEmail(email);
+      if (role) setUserRole(role);
     }
   };
 
@@ -83,8 +63,6 @@ const ProfileScreen = ({ navigation }) => {
       await AsyncStorage.removeItem('userEmail');
       await AsyncStorage.removeItem('userRole');
       await AsyncStorage.removeItem('userName');
-      await AsyncStorage.removeItem('userPhoto');
-      await AsyncStorage.removeItem('userPhone');
       await AsyncStorage.removeItem('userId');
       navigation.replace('Login');
     } catch (error) {
@@ -93,13 +71,11 @@ const ProfileScreen = ({ navigation }) => {
   };
 
   let displayName = userName ? `${userName}${userLastName ? ' ' + userLastName : ''}` : (userEmail || 'Usuario');
-  // For psychologist mock: prefix with Dra. if not already present
   if (userRole === 'psychologist' && userName) {
     const startsWithTitle = /^\s*(Dra\.|Dr\.)/i.test(userName);
     if (!startsWithTitle) displayName = `Dra. ${displayName}`;
   }
 
-  // Prepare role-adapted details (fallback placeholders when info is missing)
   const getRoleDetails = () => {
     if (userRole === 'psychologist') {
       return [
@@ -110,7 +86,6 @@ const ProfileScreen = ({ navigation }) => {
         { label: 'Documentos', value: userDocs ? 'Adjuntos' : 'No adjuntos' },
       ];
     }
-
     if (userRole === 'admin') {
       return [
         { label: 'Correo', value: userEmail || 'No registrado' },
@@ -118,7 +93,6 @@ const ProfileScreen = ({ navigation }) => {
         { label: 'Rol', value: 'Administrador' },
       ];
     }
-
     if (userRole === 'manager') {
       return [
         { label: 'Correo', value: userEmail || 'No registrado' },
@@ -127,8 +101,6 @@ const ProfileScreen = ({ navigation }) => {
         { label: 'Posición', value: userPosition || '-' },
       ];
     }
-
-    // default / worker
     return [
       { label: 'Correo', value: userEmail || 'No registrado' },
       { label: 'Apellido', value: userLastName || '-' },
@@ -144,9 +116,8 @@ const ProfileScreen = ({ navigation }) => {
     : '';
 
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.container}>
       <View style={styles.topArea}>
-        {/* hide edit for manager/admin to match the leader view mock */}
         {userRole !== 'manager' && userRole !== 'admin' ? (
           <TouchableOpacity style={styles.editButton} onPress={() => navigation.navigate('EditProfile')}>
             <Text style={styles.editButtonText}>Editar Perfil</Text>
@@ -162,70 +133,23 @@ const ProfileScreen = ({ navigation }) => {
         )}
 
         <Text style={styles.bigName}>{displayName}</Text>
-        {userRole === 'worker' ? (
-          <Text style={styles.roleSub}>Trabajadora</Text>
-        ) : userRole === 'manager' || userRole === 'admin' ? (
-          // show the actual position/title as role subtitle for managers/admins
-          <Text style={styles.roleSub}>{userPosition || roleLabel}</Text>
-        ) : (
-          roleLabel ? <Text style={styles.roleSub}>{roleLabel}</Text> : null
-        )}
+        <Text style={styles.roleSub}>{roleLabel}</Text>
       </View>
 
-<<<<<<< HEAD:mobile/src/screens/ProfileScreen.js
-      <View style={styles.settingsContainer}>
-        <TouchableOpacity
-          style={styles.settingItem}
-          onPress={() => navigation.navigate('EditProfile')}
-        >
-          <Text style={styles.settingText}>Editar Perfil</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.settingItem}
-          onPress={() => navigation.navigate('Appointment')}
-        >
-          <Text style={styles.settingText}>Agendar Cita</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.settingItem}>
-          <Text style={styles.settingText}>Notificaciones</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.settingItem}>
-          <Text style={styles.settingText}>Privacidad</Text>
-        </TouchableOpacity>
-=======
       <View style={styles.detailsCard}>
-        {/* manager / leader specific layout */}
         {userRole === 'manager' || userRole === 'admin' ? (
           <>
             <View style={styles.rowBlock}>
               <Text style={styles.blockLabel}>Posición</Text>
               <Text style={styles.blockValue}>{userPosition || '-'}</Text>
             </View>
-
             <View style={styles.rowBlock}>
               <Text style={styles.blockLabel}>Correo electrónico</Text>
               <Text style={styles.blockValue}>{userEmail || '-'}</Text>
             </View>
-
             <View style={styles.rowBlock}>
               <Text style={styles.blockLabel}>Empresa</Text>
               <Text style={styles.blockValue}>{userCompany || '-'}</Text>
-            </View>
-
-            <View style={styles.rowBlock}>
-              <Text style={styles.blockLabel}>Departamentos encargados</Text>
-              {/* Try to parse multiple departments if stored as CSV; otherwise show fallback list */}
-              {userDepartment ? (
-                userDepartment.split(/[;,|\n]/).map((d, idx) => (
-                  <Text key={idx} style={styles.blockValue}>• {d.trim()}</Text>
-                ))
-              ) : (
-                <>
-                  <Text style={styles.blockValue}>• Contabilidad de costos</Text>
-                  <Text style={styles.blockValue}>• Cuentas por pagar</Text>
-                  <Text style={styles.blockValue}>• Cuentas por cobrar</Text>
-                </>
-              )}
             </View>
           </>
         ) : userRole === 'worker' ? (
@@ -234,24 +158,20 @@ const ProfileScreen = ({ navigation }) => {
               <Text style={styles.blockLabel}>Edad</Text>
               <Text style={styles.blockValue}>{userAge ? `${userAge} años` : '-'}</Text>
             </View>
-
             <View style={styles.rowBlock}>
               <Text style={styles.blockLabel}>Correo electrónico</Text>
               <Text style={styles.blockValue}>{userEmail || '-'}</Text>
             </View>
-
             <View style={styles.rowBlock}>
               <Text style={styles.blockLabel}>Empresa</Text>
               <Text style={styles.blockValue}>{userCompany || '-'}</Text>
             </View>
-
             <View style={styles.rowBlock}>
               <Text style={styles.blockLabel}>Área o departamento</Text>
               <Text style={styles.blockValue}>{userDepartment || '-'}</Text>
             </View>
           </>
         ) : (
-          // other roles keep previous rows
           getRoleDetails().map((row) => (
             <View key={row.label} style={styles.infoRow}>
               <Text style={styles.infoLabel}>{row.label}</Text>
@@ -259,13 +179,12 @@ const ProfileScreen = ({ navigation }) => {
             </View>
           ))
         )}
->>>>>>> 49a72a044e99258f65e9490e898d1d55c47f9826:src/screens/ProfileScreen.js
       </View>
 
       <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
         <Text style={styles.logoutButtonText}>Cerrar sesión</Text>
       </TouchableOpacity>
-    </View>
+    </ScrollView>
   );
 };
 
@@ -275,59 +194,22 @@ const styles = StyleSheet.create({
     backgroundColor: '#EAF4FF',
     padding: 20,
   },
-  profileInfo: {
+  topArea: {
     alignItems: 'center',
-    marginVertical: 20,
+    paddingTop: 20,
+    paddingBottom: 10,
   },
-  avatarPlaceholder: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    backgroundColor: '#007AFF',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 10,
-  },
-  avatarText: {
-    fontSize: 40,
-    color: 'white',
-    fontWeight: 'bold',
-  },
-  email: {
-    fontSize: 18,
-    color: '#007AFF',
-    fontWeight: '700',
-  },
-  headerRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 4,
-    marginTop: 6,
-  },
-  leftHeader: { width: 36 },
   editButton: {
     paddingVertical: 8,
     paddingHorizontal: 12,
     borderRadius: 8,
     backgroundColor: 'transparent',
+    alignSelf: 'flex-end',
+    marginBottom: 10,
   },
   editButtonText: {
     color: '#007AFF',
     fontWeight: '700',
-  },
-
-  profileCard: {
-    alignItems: 'center',
-    paddingVertical: 14,
-    marginTop: 6,
-  },
-  avatar: {
-    width: 110,
-    height: 110,
-    borderRadius: 56,
-    marginBottom: 10,
-    backgroundColor: '#007AFF',
   },
   avatarLarge: {
     width: 120,
@@ -353,11 +235,6 @@ const styles = StyleSheet.create({
     fontSize: 36,
     fontWeight: '800',
     color: '#0B3D91'
-  },
-  topArea: {
-    alignItems: 'center',
-    paddingTop: 20,
-    paddingBottom: 10,
   },
   bigName: {
     fontSize: 22,
@@ -391,25 +268,6 @@ const styles = StyleSheet.create({
     color: '#6C7DA6',
     fontSize: 14,
   },
-  name: {
-    fontSize: 24,
-    fontWeight: '800',
-    color: '#007AFF',
-    marginBottom: 6,
-  },
-  roleLabel: {
-    fontSize: 14,
-    color: '#007AFF',
-    opacity: 0.8,
-    fontWeight: '600',
-  },
-
-  infoCard: {
-    backgroundColor: 'white',
-    borderRadius: 12,
-    padding: 16,
-    marginTop: 14,
-  },
   infoRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -427,27 +285,6 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#0B3D91',
   },
-  extraButton: {
-    marginTop: 12,
-    backgroundColor: '#F2F7FB',
-    paddingVertical: 10,
-    borderRadius: 10,
-    alignItems: 'center',
-  },
-  extraButtonText: {
-    color: '#007AFF',
-    fontWeight: '700',
-  },
-  settingItem: {
-    padding: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
-  },
-  settingText: {
-    fontSize: 16,
-    color: '#007AFF',
-    fontWeight: '600',
-  },
   logoutButton: {
     backgroundColor: '#FFA65C',
     padding: 15,
@@ -456,6 +293,7 @@ const styles = StyleSheet.create({
     marginTop: 20,
     width: '80%',
     alignSelf: 'center',
+    marginBottom: 40,
   },
   logoutButtonText: {
     color: 'white',

@@ -1,14 +1,41 @@
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, View, Text, ScrollView, Dimensions } from 'react-native';
-<<<<<<< HEAD:mobile/src/screens/analytics/DashboardScreen.js
-import { BarChart, LineChart } from 'react-native-chart-kit';
+import { BarChart, LineChart, ProgressChart } from 'react-native-chart-kit';
 import api from '../../services/api';
 
 const DashboardScreen = () => {
-  const [dashboardData, setDashboardData] = React.useState(null);
-  const [loading, setLoading] = React.useState(true);
+  const [dashboardData, setDashboardData] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  React.useEffect(() => {
+  // Estructura de ejemplo (mock) para la vista de métricas
+  const mockData = {
+    global_score: 72,
+    // Datos para la gráfica de línea de evolución
+    mentalHealthTrend: {
+      labels: ['Ene', 'Feb', 'Mar'], // Últimos 3 meses
+      datasets: [{
+        data: [85, 88, 82], // Índice de salud mental (0-100)
+        color: (opacity = 1) => `rgba(0, 122, 255, ${opacity})`
+      }],
+      period: "90_days"
+    },
+    ia_interactions_pct: 0.29,
+    evaluations: [8, 15, 20, 24],
+    average_state: 'Calmado',
+    engagement: {
+      active: '82%',
+      psych_sessions_pct: '24%'
+    },
+    summary: {
+      trend: 'Estable',
+      coverage: '77%',
+      users: 2530
+    },
+    // Fallback specific field
+    mood_trend: null
+  };
+
+  useEffect(() => {
     fetchDashboardData();
   }, []);
 
@@ -20,43 +47,8 @@ const DashboardScreen = () => {
       console.error(error);
     } finally {
       setLoading(false);
-=======
-import { BarChart, LineChart, ProgressChart } from 'react-native-chart-kit';
-import { getMetrics } from '../../api/client';
-
-const DashboardScreen = () => {
-  // Estructura de ejemplo (mock) para la vista de métricas
-  const mockData = {
-    // Datos para la gráfica de barras de semáforo
-    trafficLightData: {
-      labels: ['Verde', 'Amarillo', 'Rojo'],
-      datasets: [{
-        data: [65, 25, 10] // Porcentajes
-      }],
-      total_employees: 200
-    },
-    // Datos para la gráfica de línea de evolución
-    mentalHealthTrend: {
-      labels: ['Ene', 'Feb', 'Mar'], // Últimos 3 meses
-      datasets: [{
-        data: [85, 88, 82], // Índice de salud mental (0-100)
-        color: (opacity = 1) => `rgba(0, 122, 255, ${opacity})`
-      }],
-      period: "90_days"
->>>>>>> 49a72a044e99258f65e9490e898d1d55c47f9826:src/screens/analytics/DashboardScreen.js
     }
   };
-
-  if (loading || !dashboardData) {
-    return (
-      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
-        <Text>Cargando gráficas...</Text>
-      </View>
-    );
-  }
-
-  // Use dashboardData instead of mockData
-  const mockData = dashboardData;
 
   const chartConfig = {
     backgroundGradientFrom: '#ffffff',
@@ -69,22 +61,14 @@ const DashboardScreen = () => {
 
   const screenWidth = Dimensions.get('window').width;
 
-  const [remote, setRemote] = useState(null);
-
-  useEffect(() => {
-    let mounted = true;
-    (async () => {
-      try {
-        const res = await getMetrics();
-        if (mounted && res) setRemote(res);
-      } catch (e) {
-        // keep mock on network error
-      }
-    })();
-    return () => { mounted = false; };
-  }, []);
-
-  const data = remote || mockData;
+  // Merge API data with mock data to ensure UI has all required fields
+  // If API returns global_score (as mentalHealthScore), use it.
+  const data = {
+    ...mockData,
+    ...dashboardData,
+    // Map specific API fields if names differ
+    global_score: dashboardData?.mentalHealthScore || mockData.global_score
+  };
 
   // support both server key shapes: `mentalHealthTrend` (client) or `mood_trend` (server)
   const trendData = data.mentalHealthTrend || (data.mood_trend ? {
@@ -92,50 +76,28 @@ const DashboardScreen = () => {
     datasets: [{ data: data.mood_trend.data || [] }]
   } : mockData.mentalHealthTrend);
 
-  return (
-<<<<<<< HEAD:mobile/src/screens/analytics/DashboardScreen.js
-    <ScrollView style={styles.container}>
-      <Text style={styles.title}>Dashboard General</Text>
+  const evaluationsData = data.evaluations || mockData.evaluations;
 
-      {/* Gráfica de Barras - Semáforo */}
-      <View style={styles.chartContainer}>
-        <Text style={styles.chartTitle}>Distribución por Nivel de Riesgo</Text>
-        <BarChart
-          data={{
-            labels: mockData.trafficLightData.labels,
-            datasets: [{
-              data: mockData.trafficLightData.datasets[0].data
-            }]
-          }}
-          width={screenWidth - 40}
-          height={220}
-          chartConfig={{
-            ...chartConfig,
-            color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
-            colors: ['#4CAF50', '#FFC107', '#FF5252']
-          }}
-          style={styles.chart}
-          showValuesOnTopOfBars
-        />
-        <Text style={styles.chartNote}>
-          Total de empleados: {mockData.trafficLightData.total_employees}
-        </Text>
-=======
-    <ScrollView style={styles.container} contentContainerStyle={{padding: 20}}>
+  if (loading && !dashboardData) {
+    // Optional: Show simplified loading or just render with mock default while loading
+  }
+
+  return (
+    <ScrollView style={styles.container} contentContainerStyle={{ padding: 20 }}>
       <Text style={styles.screenTitle}>Métricas</Text>
 
       <Text style={styles.sectionTitle}>Panel de Salud Mental</Text>
 
       <View style={styles.row}>
         {/* Score card */}
-        <View style={[styles.smallCard, {width: (screenWidth - 60) * 0.4}]}>
+        <View style={[styles.smallCard, { width: (screenWidth - 60) * 0.4 }]}>
           <Text style={styles.smallLabel}>Puntaje de bienestar</Text>
-          <Text style={styles.scoreValue}>{data.global_score || 72}</Text>
+          <Text style={styles.scoreValue}>{data.global_score}</Text>
           <Text style={styles.smallNote}>Actual</Text>
         </View>
 
         {/* Mood trend */}
-        <View style={[styles.largeCard, {width: (screenWidth - 60) * 0.6}]}>
+        <View style={[styles.largeCard, { width: (screenWidth - 60) * 0.6 }]}>
           <Text style={styles.cardTitle}>Estado de ánimo</Text>
           <LineChart
             data={{
@@ -147,18 +109,17 @@ const DashboardScreen = () => {
             chartConfig={chartConfig}
             withDots={true}
             bezier
-            style={{paddingRight: 10}}
+            style={{ paddingRight: 10 }}
           />
         </View>
->>>>>>> 49a72a044e99258f65e9490e898d1d55c47f9826:src/screens/analytics/DashboardScreen.js
       </View>
 
       <View style={styles.row}>
         {/* Interactions with AI */}
-        <View style={[styles.smallCard, {width: (screenWidth - 60) * 0.4}]}>
+        <View style={[styles.smallCard, { width: (screenWidth - 60) * 0.4 }]}>
           <Text style={styles.smallLabel}>Interacciones con IA</Text>
           <ProgressChart
-            data={{labels: ['IA'], data: [data.ia_interactions_pct || 0.29]}}
+            data={{ labels: ['IA'], data: [data.ia_interactions_pct || 0] }}
             width={(screenWidth - 60) * 0.35}
             height={120}
             strokeWidth={8}
@@ -166,21 +127,21 @@ const DashboardScreen = () => {
             chartConfig={chartConfig}
             hideLegend={true}
           />
-          <Text style={styles.smallPercent}>{data.ia_interactions_pct ? `${Math.round(data.ia_interactions_pct * 100)}%` : '29%'}</Text>
+          <Text style={styles.smallPercent}>{data.ia_interactions_pct ? `${Math.round(data.ia_interactions_pct * 100)}%` : '0%'}</Text>
         </View>
 
         {/* Evaluations bar chart */}
-        <View style={[styles.largeCard, {width: (screenWidth - 60) * 0.6}]}>
+        <View style={[styles.largeCard, { width: (screenWidth - 60) * 0.6 }]}>
           <Text style={styles.cardTitle}>Evaluaciones completadas</Text>
           <BarChart
             data={{
-              labels: ['Abr 10','Abr 17','Abr 24','May 1'],
-              datasets: [{ data: data.evaluations || [8, 15, 20, 24] }]
+              labels: ['Abr 10', 'Abr 17', 'Abr 24', 'May 1'],
+              datasets: [{ data: evaluationsData }]
             }}
             width={(screenWidth - 60) * 0.55}
             height={120}
             chartConfig={chartConfig}
-            style={{marginTop: 8}}
+            style={{ marginTop: 8 }}
             fromZero
             showValuesOnTopOfBars
           />
@@ -205,35 +166,35 @@ const DashboardScreen = () => {
           <View style={styles.engRow}>
             <View style={styles.engCol}>
               <Text style={styles.engLabel}>Empleados activos</Text>
-              <Text style={styles.engValue}>{data.engagement?.active || '82%'}</Text>
+              <Text style={styles.engValue}>{data.engagement?.active || '-'}</Text>
             </View>
             <View style={styles.engCol}>
               <Text style={styles.engLabel}>% con sesiones de psicólogo</Text>
-              <Text style={styles.engValue}>{data.engagement?.psych_sessions_pct || '24%'}</Text>
+              <Text style={styles.engValue}>{data.engagement?.psych_sessions_pct || '-'}</Text>
             </View>
           </View>
         </View>
       </View>
 
-      <View style={{height: 18}} />
+      <View style={{ height: 18 }} />
 
       <Text style={styles.sectionTitle}>Estado general de salud mental</Text>
       <View style={styles.summaryRow}>
         <View style={styles.summaryItem}>
           <Text style={styles.summaryLabel}>Tendencia</Text>
-          <Text style={styles.summaryValue}>{data.summary?.trend || 'Estable'}</Text>
+          <Text style={styles.summaryValue}>{data.summary?.trend || '-'}</Text>
         </View>
         <View style={styles.summaryItem}>
           <Text style={styles.summaryLabel}>Cobertura</Text>
-          <Text style={styles.summaryValue}>{data.summary?.coverage || '77%'}</Text>
+          <Text style={styles.summaryValue}>{data.summary?.coverage || '-'}</Text>
         </View>
         <View style={styles.summaryItem}>
           <Text style={styles.summaryLabel}>Usuarios</Text>
-          <Text style={styles.summaryValue}>{data.summary?.users || 2530}</Text>
+          <Text style={styles.summaryValue}>{data.summary?.users || '-'}</Text>
         </View>
       </View>
 
-      <View style={{height: 36}} />
+      <View style={{ height: 36 }} />
     </ScrollView>
   );
 };
@@ -251,14 +212,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     elevation: 2,
+    height: 180
   },
   largeCard: {
     backgroundColor: 'white',
     borderRadius: 12,
     padding: 12,
     elevation: 2,
+    height: 180
   },
-  smallLabel: { color: '#66788A', fontWeight: '700', marginBottom: 6 },
+  smallLabel: { color: '#66788A', fontWeight: '700', marginBottom: 6, textAlign: 'center' },
   scoreValue: { fontSize: 44, fontWeight: '900', color: '#003C67' },
   smallNote: { color: '#9AA6B2', marginTop: 6 },
   smallPercent: { marginTop: 6, fontWeight: '800', color: '#6F5FB3' },

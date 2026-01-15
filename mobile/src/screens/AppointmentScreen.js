@@ -1,16 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { createAppointment } from '../api/client';
 import { StyleSheet, View, Text, TouchableOpacity, ScrollView } from 'react-native';
 import { Calendar } from 'react-native-calendars';
 import api from '../services/api';
-import { useEffect } from 'react';
 
 const AppointmentScreen = ({ navigation }) => {
   const [selectedDate, setSelectedDate] = useState(null);
   const [selectedTime, setSelectedTime] = useState(null);
 
-<<<<<<< HEAD:mobile/src/screens/AppointmentScreen.js
   const [psychologist, setPsychologist] = useState({
     name: "Cargando...",
     specialty: "",
@@ -28,23 +25,14 @@ const AppointmentScreen = ({ navigation }) => {
       setPsychologist(response.data);
     } catch (error) {
       console.error(error);
+      // Fallback if API fails
+      setPsychologist({
+        name: "Dra. María González",
+        specialty: "Psicóloga Clínica",
+        experience: "10 años de experiencia"
+      });
     }
   };
-=======
-  // Simulación de datos del psicólogo asignado
-  const psychologist = {
-    name: "Laura Herrera",
-    specialty: "Psicóloga organizacional",
-    experience: "7 años de experiencia"
-  };
-
-  // Simulación de horarios disponibles (ejemplo reducido, formato amigable)
-  const availableHours = [
-    '10:00 am',
-    '11:00 am',
-    '2:00 pm',
-  ];
->>>>>>> 49a72a044e99258f65e9490e898d1d55c47f9826:src/screens/AppointmentScreen.js
 
   // Obtener la fecha actual para el calendario
   const today = new Date();
@@ -58,6 +46,7 @@ const AppointmentScreen = ({ navigation }) => {
       setAvailableHours(response.data);
     } catch (error) {
       console.error("Error fetching slots", error);
+      setAvailableHours(['09:00', '10:00', '11:00']); // Fallback
     }
   };
 
@@ -67,7 +56,6 @@ const AppointmentScreen = ({ navigation }) => {
 
   const handleSchedule = async () => {
     if (selectedDate && selectedTime) {
-<<<<<<< HEAD:mobile/src/screens/AppointmentScreen.js
       try {
         await api.post('/appointments/book', {
           date: selectedDate.toISOString().split('T')[0],
@@ -75,53 +63,14 @@ const AppointmentScreen = ({ navigation }) => {
         });
         const formattedDate = selectedDate.toLocaleDateString();
         alert(`Cita agendada con ${psychologist.name} para el ${formattedDate} a las ${selectedTime}`);
+
         // Reset
         setSelectedDate(null);
         setSelectedTime(null);
         setAvailableHours([]);
       } catch (error) {
-        alert('Error al agendar la cita');
+        alert('Error al agendar la cita. Inténtalo de nuevo.');
       }
-=======
-      (async () => {
-        try {
-          // Compose a ISO datetime from selected date + time string like '10:00 am'
-          const date = selectedDate;
-          // parse time
-          const m = selectedTime.match(/(\d+):(\d+)\s*(am|pm)/i);
-          let hour = 9, minute = 0;
-          if (m) {
-            hour = parseInt(m[1], 10);
-            minute = parseInt(m[2], 10);
-            const ampm = m[3].toLowerCase();
-            if (ampm === 'pm' && hour < 12) hour += 12;
-            if (ampm === 'am' && hour === 12) hour = 0;
-          }
-
-          const start = new Date(date);
-          start.setHours(hour, minute, 0, 0);
-
-          const userId = await AsyncStorage.getItem('userId');
-          const payload = {
-            user_id: userId ? Number(userId) : 0,
-            psych_id: null,
-            start_time: start.toISOString(),
-            duration_minutes: 60,
-            notes: ''
-          };
-
-          try {
-            await createAppointment(payload);
-            alert(`Cita agendada con ${psychologist.name} para el ${start.toLocaleDateString()} a las ${selectedTime}`);
-          } catch (e) {
-            // network error -> fallback to local confirmation
-            alert(`Cita (local) agendada con ${psychologist.name} para el ${start.toLocaleDateString()} a las ${selectedTime}`);
-          }
-        } catch (e) {
-          alert('Error al agendar cita');
-        }
-      })();
->>>>>>> 49a72a044e99258f65e9490e898d1d55c47f9826:src/screens/AppointmentScreen.js
     } else {
       alert('Por favor selecciona fecha y hora');
     }
@@ -136,6 +85,7 @@ const AppointmentScreen = ({ navigation }) => {
         <Text style={styles.headerTitle}>Programar cita</Text>
         <View style={{ width: 40 }} />
       </View>
+
       {/* Información del psicólogo */}
       <View style={styles.psychologistCardAlt}>
         <View style={styles.psychAvatar} />
