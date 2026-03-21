@@ -1,84 +1,37 @@
 import React from 'react';
 import { StyleSheet, View, Text, ScrollView, Dimensions } from 'react-native';
 import { VictoryHeatMap } from 'victory-native';
+import api from '../../services/api';
 
 const DepartmentAnalyticsScreen = () => {
   // Esta sería la estructura del JSON que esperarías de la API para esta vista
-  const mockData = {
-    // Datos para la tabla de departamentos
-    departmentStats: {
-      departments: [
-        {
-          name: "Tecnología",
-          traffic_light: {
-            green: 70,
-            yellow: 20,
-            red: 10
-          },
-          total_employees: 50,
-          risk_score: 25 // 0-100
-        },
-        {
-          name: "Recursos Humanos",
-          traffic_light: {
-            green: 60,
-            yellow: 30,
-            red: 10
-          },
-          total_employees: 30,
-          risk_score: 35
-        },
-        {
-          name: "Ventas",
-          traffic_light: {
-            green: 50,
-            yellow: 35,
-            red: 15
-          },
-          total_employees: 45,
-          risk_score: 45
-        }
-      ]
-    },
-    // Datos para el mapa de calor
-    heatmapData: {
-      departments: [
-        {
-          name: "Tecnología",
-          metrics: {
-            stress_level: 30,
-            work_life_balance: 25,
-            job_satisfaction: 20,
-            team_communication: 15
-          }
-        },
-        {
-          name: "Recursos Humanos",
-          metrics: {
-            stress_level: 35,
-            work_life_balance: 30,
-            job_satisfaction: 25,
-            team_communication: 20
-          }
-        },
-        {
-          name: "Ventas",
-          metrics: {
-            stress_level: 45,
-            work_life_balance: 40,
-            job_satisfaction: 35,
-            team_communication: 30
-          }
-        }
-      ],
-      metric_descriptions: {
-        stress_level: "Nivel de Estrés",
-        work_life_balance: "Balance Vida-Trabajo",
-        job_satisfaction: "Satisfacción Laboral",
-        team_communication: "Comunicación de Equipo"
-      }
+  const [departmentData, setDepartmentData] = React.useState(null);
+  const [loading, setLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    fetchDepartmentData();
+  }, []);
+
+  const fetchDepartmentData = async () => {
+    try {
+      const response = await api.get('/analytics/departments');
+      setDepartmentData(response.data);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
     }
   };
+
+  if (loading || !departmentData) {
+    return (
+      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+        <Text>Cargando datos...</Text>
+      </View>
+    );
+  }
+
+  const mockData = departmentData;
 
   return (
     <ScrollView style={styles.container}>
