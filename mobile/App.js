@@ -14,6 +14,7 @@ import LoginScreen from './src/screens/LoginScreen';
 import RegisterScreen from './src/screens/RegisterScreen';
 import RegistrationCompleteScreen from './src/screens/RegistrationCompleteScreen';
 import ChatScreen from './src/screens/ChatScreen';
+import SurveyScreen from './src/screens/SurveyScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
 import EditProfileScreen from './src/screens/EditProfileScreen';
 import AppointmentScreen from './src/screens/AppointmentScreen';
@@ -124,6 +125,16 @@ function MainTabs() {
               title: 'Chat',
               tabBarIcon: ({ color, size }) => (
                 <ChatIcon width={size} height={size} color={color} />
+              )
+            }}
+          />
+          <Tab.Screen 
+            name="Surveys" 
+            component={SurveyScreen} 
+            options={{
+              title: 'Encuestas',
+              tabBarIcon: ({ color, size }) => (
+                <DashboardIcon width={size} height={size} color={color} />
               )
             }}
           />

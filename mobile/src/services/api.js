@@ -2,9 +2,10 @@ import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform } from 'react-native';
 
-// Use 10.0.2.2 for Android Emulator, localhost for iOS/Web
-// If running on physical device, replace with your PC's LAN IP (e.g., http://192.168.1.5:3000)
-const API_URL = Platform.OS === 'android' ? 'http://10.0.2.2:3000/api' : 'http://localhost:3000/api';
+// Production: nurova.technology | Development: localhost
+const API_URL = __DEV__ 
+  ? (Platform.OS === 'android' ? 'http://10.0.2.2:3000/api' : 'http://localhost:3000/api')
+  : 'http://nurova.technology/api';
 
 const api = axios.create({
     baseURL: API_URL,
